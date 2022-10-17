@@ -1,3 +1,15 @@
 #form{
     margin-top: 20px;
 }
+#perwievImg{
+    max-width: 150px;
+    max-height: 150px;
+}
+#Addfile_Continer{
+    max-width: 1200px;
+    display: flex;
+    flex-direction: column ;
+}
+#FormControl{
+    max-width: 600px;
+}
