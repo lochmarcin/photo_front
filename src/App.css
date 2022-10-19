@@ -1,4 +1,5 @@
 div#container{
+    margin: auto;
     display: flex;
     justify-content: center;
     max-width: 1200px;
