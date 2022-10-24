@@ -10,16 +10,23 @@ import { typeImplementation } from "@testing-library/user-event/dist/type/typeIm
 
 
 const AddFile = () => {
+    const [filesExist, setfilesExist] = React.useState()
     const [file, setFiles] = React.useState([])
     const [selectedFiles, setSelectedFiles] = React.useState([])
-    const [send, setSend] = React.useState(false);
+    
     const [progress, setProgress] = React.useState(0)
     const [size, setSize] = React.useState(0)
-
+    
+    const [sending, setSending] = React.useState(false);
+    const [send, setSend] = React.useState(false);
 
 
     const sendFile = (e) => {
         e.preventDefault()
+        
+        console.log(filesExist)
+        if(filesExist == true)
+            return null
 
         console.log("File length: " + file.length)
         let sizz = 0
@@ -28,36 +35,14 @@ const AddFile = () => {
         }
         setSize(sizz)
 
-        console.log("total size: " + size)
+        console.log("total size: " + sizz)
 
-        setSend(true)
+        setSending(true)
 
-        // var formData = new FormData();
-        // // for (const key of Object.keys(selectedFiles)) {
-        // //     formData.append('imgCollection', selectedFiles[key])
-        // // }
-
-        // if (selectedFiles.length != 0) {
-        //     for (const single_file of selectedFiles) {
-        //         formData.append('file', single_file)
-        //     }
-        // }
-        // Update the formData object
-        // formData.append(
-        //     "apk",
-        //     selectedFile,
-        //     selectedFile.name
-        // );
-        // setSend(true)
-        // const config = {
-        //     onUploadProgress: progressEvent => console.log(progressEvent.loaded)
-        // }
-
-        // console.log(file)
-        // console.log(file.length)
-        // console.log(file[1])
 
         for (let i = 0; i < file.length; i++) {
+
+
             console.log(file[i])
 
             const formData = new FormData();
@@ -69,54 +54,31 @@ const AddFile = () => {
             axios.post('http://127.0.0.1:5000/save/sendFile', formData, {
                 headers: {
                     "Content-Type": "multipart/form-data",
-                },
-                onUploadProgress: (data) => {
-                    // percent[i] = Math.round((100 * data.loaded) / data.total)
-
-                    //Set the progress value to show the progress bar
-                    setProgress(progress + data.loaded);
-                    console.log(progress)
                 }
+                // onUploadProgress: (data) => {
+
+                //     setProgress(progress + data.loaded);
+                //     console.log(progress)
+                // }
             })
                 .then(function (response) {
                     console.log("chyba poszło")
-                    // setProgress(response.data.sendStatus)
-                    // if (response.data.sendStatus)
-                    //     setTimeout(reloadPage, 3000)
+
                 })
                 .catch(function (error) {
                     console.log(error);
                 });
+        
+            
         }
-
-        //     
-
-
-        // axios.post('http://127.0.0.1:5000/save/sendFile', formData, {
-        //     headers: {
-        //         "Content-Type": "multipart/form-data",
-        //     }
-        //     // onUploadProgress: (data) => {
-
-        //     //     //Set the progress value to show the progress bar
-        //     //     setProgress(Math.round((100 * data.loaded) / data.total));
-        //     // },
-        // })
-        //     .then(function (response) {
-        //         console.log("chyba poszło")
-        //         // setProgress(response.data.sendStatus)
-        //         // if (response.data.sendStatus)
-        //         //     setTimeout(reloadPage, 3000)
-        //     })
-        //     .catch(function (error) {
-        //         console.log(error);
-        //     });
+        setSending(false)
+        setSend(true)
 
     }
 
     const handleImageChange = (e) => {
         setSize(0)
-      
+
         setSend(false)
         setProgress(0)
         setSelectedFiles([])
@@ -128,8 +90,10 @@ const AddFile = () => {
 
             // console.log("filesArray: ", filesArray);
             setFiles(e.target.files)
-
             setSelectedFiles((prevImages) => prevImages.concat(filesArray));
+
+            setfilesExist(false)
+
             Array.from(e.target.files).map(
                 (file) => URL.revokeObjectURL(file) // avoid memory leak
             );
@@ -162,23 +126,28 @@ const AddFile = () => {
 
     const deletePhoto = (id) => {
         console.log("usuń: " + id)
-        console.log(typeof (file))
+
+
+        const filesArray = Array.from(file)
+        console.log("type od newfiles: " + typeof (newfiles))
+        if (id > -1) { // only splice array when item is found
+            filesArray.splice(id, 1); // 2nd parameter means remove one item only
+        }
+        setFiles(filesArray)
+
+
+
+        const perwievfiles = Array.from(selectedFiles)
+        if (id > -1) { // only splice array when item is found
+            perwievfiles.splice(id, 1); // 2nd parameter means remove one item only
+        }
+        setSelectedFiles(perwievfiles)
+
+
+        setfilesExist(perwievfiles.length == 0 ? true : false)
 
     }
 
-    // const perviewPhoto = (e) => {
-
-    //     console.log(e.target.files);
-    //     setFiles(URL.createObjectURL(e.target.files[0]));
-    // }
-
-
-    // const renderPhotos = (source) => {
-    // 	console.log('source: ', source);
-    // 	return source.map((photo) => {
-    // 		return <img src={photo} alt="" key={photo} />;
-    // 	});
-    // };
 
 
     return (
@@ -216,6 +185,7 @@ const AddFile = () => {
                             accept=".png,.jpg,.jpeg,.webp"
                             onChange={handleImageChange}
                         />
+                        {filesExist && <p>Brak plików</p>}
 
                         <br />
 
@@ -224,19 +194,22 @@ const AddFile = () => {
                         </Button>
 
                         {/* <div className="result">{renderPhotos(selectedFiles)}</div> */}
-                        
+
                         {/* </Col>
 
                         </Row> */}
                     </Form.Group>
                 </Form >
             </div >
-            {send && <ProgressBar now={Math.round((100 * progress) / size)} label={`${Math.round((100 * progress) / size)} %`} />}
-
+            {/* {send && <ProgressBar now={Math.round((100 * progress) / size)} label={`${Math.round((100 * progress) / size)} %`} />} */}
+            {sending && <div className="spinner-3" id="spinner-3"></div>}
+            {send && <p>Wysłano pliki</p>}
             <br />
             <div id="perwiev_container">
 
                 {renderPhotos(selectedFiles)}
+                {/* {console.log("selectred :")}
+                {console.log(selectedFiles)} */}
             </div>
 
 
