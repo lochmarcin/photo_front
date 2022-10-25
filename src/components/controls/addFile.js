@@ -13,19 +13,22 @@ const AddFile = () => {
     const [filesExist, setfilesExist] = React.useState()
     const [file, setFiles] = React.useState([])
     const [selectedFiles, setSelectedFiles] = React.useState([])
-    
+
     const [progress, setProgress] = React.useState(0)
     const [size, setSize] = React.useState(0)
-    
+
     const [sending, setSending] = React.useState(false);
     const [send, setSend] = React.useState(false);
+
+    const [folderId, setFolderId] = React.useState('');
+    const [folderExist, setFolderExist] = React.useState(false);
 
 
     const sendFile = (e) => {
         e.preventDefault()
-        
+
         console.log(filesExist)
-        if(filesExist == true)
+        if (filesExist == true)
             return null
 
         console.log("File length: " + file.length)
@@ -54,7 +57,8 @@ const AddFile = () => {
             axios.post('http://127.0.0.1:5000/save/sendFile', formData, {
                 headers: {
                     "Content-Type": "multipart/form-data",
-                }
+                },
+                folderName: folderId
                 // onUploadProgress: (data) => {
 
                 //     setProgress(progress + data.loaded);
@@ -68,8 +72,8 @@ const AddFile = () => {
                 .catch(function (error) {
                     console.log(error);
                 });
-        
-            
+
+
         }
         setSending(false)
         setSend(true)
@@ -148,25 +152,50 @@ const AddFile = () => {
 
     }
 
+    const checkFolder = () => {
+        console.log("FIND folder: " + folderId)
 
+
+    }
+
+    const newFolder = () => {
+        console.log("NEW folder: " + folderId)
+        axios.post('http://127.0.0.1:5000/save/newFolder', {
+            folderName: folderId
+        })
+            .then(function (response) {
+                console.log("response: ")
+                console.log(response.data.folder)
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+
+    }
 
     return (
         <div id="main">
             <div id="Addfile_Continer">
-                <Form id="form" onSubmit={sendFile} >
+                <Form id="form" onSubmit={checkFolder} >
                     <Form.Group
                         className="mb-3"
                     >
                         {/* <Row>
                             <Col> */}
-                        <Form.Label>Wyszykaj folder</Form.Label>
+                        <Form.Label>Folder:</Form.Label>
                         <Form.Control
                             type="text"
                             placeholder="Wpisz ID"
+                            onChange={(e) => setFolderId(e.target.value)}
                         />
                         <br />
+                        {/* {folderExist ? } */}
                         <Button variant="primary" type="submit">
                             Wyszukaj
+                        </Button>
+
+                        <Button variant="success" onClick={newFolder}>
+                            Nowy folder
                         </Button>
                         {/* </Col> */}
 
